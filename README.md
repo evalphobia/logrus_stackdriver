@@ -5,7 +5,7 @@ logrus_stackdriver
  [![GoDoc](https://godoc.org/github.com/evalphobia/logrus_stackdriver?status.svg)](https://godoc.org/github.com/evalphobia/logrus_stackdriver)
 
 
-# AWS Kinesis Hook for Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>
+# Google Stackdriver logging Hook for Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>
 
 ## Usage
 
@@ -48,7 +48,7 @@ func main() {
 
 Some logrus fields have a special meaning in this hook.
 
-|||
+| Field Name | Description |
 |:--|:--|
 |`message`|if `message` is not set, entry.Message is added to log data in "message" field. |
 |`log_name`|`log_name` is a custom log name. If not set, `defaultLogName` is used as log name.|
