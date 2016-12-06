@@ -3,7 +3,6 @@ package logrus_stackdriver
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/evalphobia/google-api-go-wrapper/config"
@@ -95,47 +94,39 @@ func (h *StackdriverHook) Fire(entry *logrus.Entry) error {
 
 // Fire is invoked by logrus and sends log to kinesis.
 func (h *StackdriverHook) fire(entry *logrus.Entry) error {
-	req := getRequest(entry.Data)
-	resp := getResponse(entry.Data)
+	df := newDataField(h.defaultLogName, entry)
 
 	return h.client.Write(logging.WriteData{
 		Labels:   h.commonLabels,
-		Severity: getSeverity(entry.Level),
-		LogName:  h.getLogName(entry.Data),
-		Data:     h.getData(entry),
-		Request:  req,
-		Response: resp,
+		Severity: df.getSeverity(),
+		LogName:  df.getLogName(),
+		Data:     h.getData(df),
+		Request:  df.getRequest(),
+		Response: df.getResponse(),
 		Resource: &logging.Resource{
 			Type: "global",
 		},
 	})
 }
 
-func (h *StackdriverHook) getLogName(data logrus.Fields) string {
-	if name, ok := data["log_name"].(string); ok {
-		return name
-	}
-	return h.defaultLogName
-}
-
-func (h *StackdriverHook) getData(entry *logrus.Entry) map[string]interface{} {
-	if _, ok := entry.Data["message"]; !ok {
-		entry.Data["message"] = entry.Message
-	}
-
-	data := make(logrus.Fields)
-	for k, v := range entry.Data {
+func (h *StackdriverHook) getData(df *dataField) map[string]interface{} {
+	result := make(map[string]interface{}, df.len())
+	for k, v := range df.data {
+		if df.isOmit(k) {
+			continue // skip already used special fields
+		}
 		if _, ok := h.ignoreFields[k]; ok {
 			continue
 		}
+
 		if fn, ok := h.filters[k]; ok {
 			v = fn(v) // apply custom filter
 		} else {
 			v = formatData(v) // use default formatter
 		}
-		data[k] = v
+		result[k] = v
 	}
-	return data
+	return result
 }
 
 // formatData returns value as a suitable format.
@@ -149,40 +140,5 @@ func formatData(value interface{}) (formatted interface{}) {
 		return value.String()
 	default:
 		return value
-	}
-}
-
-func getRequest(data logrus.Fields) *http.Request {
-	if req, ok := data["http_request"].(*http.Request); ok {
-		delete(data, "http_request")
-		return req
-	}
-	return nil
-}
-
-func getResponse(data logrus.Fields) *http.Response {
-	if resp, ok := data["http_response"].(*http.Response); ok {
-		delete(data, "http_response")
-		return resp
-	}
-	return nil
-}
-
-func getSeverity(level logrus.Level) logging.Severity {
-	switch level {
-	case logrus.DebugLevel:
-		return logging.SeverityDebug
-	case logrus.InfoLevel:
-		return logging.SeverityInfo
-	case logrus.WarnLevel:
-		return logging.SeverityWarning
-	case logrus.ErrorLevel:
-		return logging.SeverityError
-	case logrus.PanicLevel:
-		return logging.SeverityCritical
-	case logrus.FatalLevel:
-		return logging.SeverityAlert
-	default:
-		return logging.SeverityDefault
 	}
 }
