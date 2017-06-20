@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/evalphobia/google-api-go-wrapper/config"
 	"github.com/evalphobia/google-api-go-wrapper/stackdriver/logging"
+	"github.com/sirupsen/logrus"
 )
 
 var defaultLevels = []logrus.Level{
