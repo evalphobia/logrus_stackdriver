@@ -100,7 +100,7 @@ func TestGetLogName(t *testing.T) {
 			Data: fields,
 		}
 
-		df := newDataField(defaultLogName, entry)
+		df := newDataFieldFromEntry(defaultLogName, entry)
 		logName := df.getLogName()
 		if tt.expected {
 			assert.Equal(tt.value, logName, target)
@@ -138,7 +138,7 @@ func TestGetRequest(t *testing.T) {
 			Data: fields,
 		}
 
-		df := newDataField(defaultLogName, entry)
+		df := newDataFieldFromEntry(defaultLogName, entry)
 		req := df.getRequest()
 		if tt.expected {
 			assert.Equal(tt.value, req, target)
@@ -178,7 +178,7 @@ func TestGetResponse(t *testing.T) {
 			Data: fields,
 		}
 
-		df := newDataField(defaultLogName, entry)
+		df := newDataFieldFromEntry(defaultLogName, entry)
 		resp := df.getResponse()
 		if tt.expected {
 			assert.Equal(tt.value, resp, target)

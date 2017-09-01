@@ -94,7 +94,7 @@ func (h *StackdriverHook) Fire(entry *logrus.Entry) error {
 
 // Fire is invoked by logrus and sends log to kinesis.
 func (h *StackdriverHook) fire(entry *logrus.Entry) error {
-	df := newDataField(h.defaultLogName, entry)
+	df := newDataFieldFromEntry(h.defaultLogName, entry)
 
 	return h.client.Write(logging.WriteData{
 		Labels:   h.commonLabels,

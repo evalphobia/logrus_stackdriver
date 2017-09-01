@@ -21,15 +21,26 @@ type dataField struct {
 	omitList       map[string]struct{}
 }
 
-func newDataField(logName string, entry *logrus.Entry) *dataField {
-	if _, ok := entry.Data[fieldMessage]; !ok {
-		entry.Data[fieldMessage] = entry.Message
+func newDataFieldFromEntry(logName string, entry *logrus.Entry) *dataField {
+	if _, ok := entry.Data[fieldMessage]; ok {
+		return newDataField(logName, entry.Data, entry.Level)
 	}
 
+	// copy logrus.Fields as we are going to modify it.
+	var fields = make(logrus.Fields)
+	for k, v := range entry.Data {
+		fields[k] = v
+	}
+	fields[fieldMessage] = entry.Message
+
+	return newDataField(logName, fields, entry.Level)
+}
+
+func newDataField(logName string, fields logrus.Fields, level logrus.Level) *dataField {
 	return &dataField{
 		defaultLogName: logName,
-		data:           entry.Data,
-		logLevel:       entry.Level,
+		data:           fields,
+		logLevel:       level,
 		omitList:       make(map[string]struct{}),
 	}
 }
