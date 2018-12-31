@@ -11,7 +11,7 @@ import (
 )
 
 func TestLen(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	tests := []struct {
 		fieldSize int
@@ -34,18 +34,18 @@ func TestLen(t *testing.T) {
 		df := dataField{
 			data: fields,
 		}
-		assert.Equal(tt.fieldSize, df.len(), "dataField.Len() should equal fieldSize", target)
+		a.Equal(tt.fieldSize, df.len(), "dataField.Len() should equal fieldSize", target)
 	}
 }
 
 func TestIsOmit(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	omitList := map[string]struct{}{
-		"key_1": struct{}{},
-		"key_2": struct{}{},
-		"key_3": struct{}{},
-		"key_4": struct{}{},
+		"key_1": {},
+		"key_2": {},
+		"key_3": {},
+		"key_4": {},
 	}
 
 	tests := []struct {
@@ -69,12 +69,12 @@ func TestIsOmit(t *testing.T) {
 		df := dataField{
 			omitList: omitList,
 		}
-		assert.Equal(tt.expected, df.isOmit(tt.key), target)
+		a.Equal(tt.expected, df.isOmit(tt.key), target)
 	}
 }
 
 func TestGetLogName(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	tests := []struct {
 		key         string
@@ -103,15 +103,15 @@ func TestGetLogName(t *testing.T) {
 		df := newDataFieldFromEntry(defaultLogName, entry)
 		logName := df.getLogName()
 		if tt.expected {
-			assert.Equal(tt.value, logName, target)
+			a.Equal(tt.value, logName, target)
 		} else {
-			assert.Equal(defaultLogName, logName, target)
+			a.Equal(defaultLogName, logName, target)
 		}
 	}
 }
 
 func TestGetRequest(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	tests := []struct {
 		key         string
@@ -141,17 +141,17 @@ func TestGetRequest(t *testing.T) {
 		df := newDataFieldFromEntry(defaultLogName, entry)
 		req := df.getRequest()
 		if tt.expected {
-			assert.Equal(tt.value, req, target)
-			assert.True(df.isOmit("http_request"), "`http_request` should be in omitList")
+			a.Equal(tt.value, req, target)
+			a.True(df.isOmit("http_request"), "`http_request` should be in omitList")
 		} else {
-			assert.Nil(req, target)
-			assert.False(df.isOmit("http_request"), "`http_request` should not be in omitList")
+			a.Nil(req, target)
+			a.False(df.isOmit("http_request"), "`http_request` should not be in omitList")
 		}
 	}
 }
 
 func TestGetResponse(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	tests := []struct {
 		key         string
@@ -181,11 +181,11 @@ func TestGetResponse(t *testing.T) {
 		df := newDataFieldFromEntry(defaultLogName, entry)
 		resp := df.getResponse()
 		if tt.expected {
-			assert.Equal(tt.value, resp, target)
-			assert.True(df.isOmit("http_response"), "`http_response` should be in omitList")
+			a.Equal(tt.value, resp, target)
+			a.True(df.isOmit("http_response"), "`http_response` should be in omitList")
 		} else {
-			assert.Nil(resp, target)
-			assert.False(df.isOmit("http_response"), "`http_response` should not be in omitList")
+			a.Nil(resp, target)
+			a.False(df.isOmit("http_response"), "`http_response` should not be in omitList")
 		}
 	}
 }

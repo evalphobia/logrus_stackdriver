@@ -1,9 +1,8 @@
 sudo: false
 language: go
 go:
-  - 1.5
-  - 1.6
-  - 1.7
+  - 1.10.x
+  - 1.x
   - tip
 matrix:
   allow_failures:
@@ -14,8 +13,8 @@ before_install:
   - go get golang.org/x/tools/cmd/cover
   - go get -v ./...
 before_script:
-  - go vet ./...
-  - gofmt -s -l .
+  - test -z "$(gofmt -s -l . | tee /dev/stderr)"
+  - go tool vet -all -structtags -shadow .
 script:
   - go test -coverprofile=coverage.txt -covermode=atomic
 after_success:

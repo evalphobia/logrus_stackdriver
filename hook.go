@@ -27,6 +27,7 @@ type StackdriverHook struct {
 	levels         []logrus.Level
 	ignoreFields   map[string]struct{}
 	filters        map[string]func(interface{}) interface{}
+	errorHandlers  []func(entry *logrus.Entry, err error)
 }
 
 // New returns initialized logrus hook for Stackdriver.
@@ -81,7 +82,12 @@ func (h *StackdriverHook) AddFilter(name string, fn func(interface{}) interface{
 	h.filters[name] = fn
 }
 
-// Fire is invoked by logrus and sends log to kinesis.
+// AddFilter adds a error handler function used when Stackdriver returns error.
+func (h *StackdriverHook) AddErrorHandler(fn func(entry *logrus.Entry, err error)) {
+	h.errorHandlers = append(h.errorHandlers, fn)
+}
+
+// Fire is invoked by logrus and sends log to Stackdriver.
 func (h *StackdriverHook) Fire(entry *logrus.Entry) error {
 	if !h.async {
 		return h.fire(entry)
@@ -92,11 +98,11 @@ func (h *StackdriverHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-// Fire is invoked by logrus and sends log to kinesis.
+// Fire is invoked by logrus and sends log to Stackdriver.
 func (h *StackdriverHook) fire(entry *logrus.Entry) error {
 	df := newDataFieldFromEntry(h.defaultLogName, entry)
 
-	return h.client.Write(logging.WriteData{
+	err := h.client.Write(logging.WriteData{
 		Labels:   h.commonLabels,
 		Severity: df.getSeverity(),
 		LogName:  df.getLogName(),
@@ -107,6 +113,15 @@ func (h *StackdriverHook) fire(entry *logrus.Entry) error {
 			Type: "global",
 		},
 	})
+	if err == nil {
+		return nil
+	}
+
+	// handle error
+	for _, handlerFn := range h.errorHandlers {
+		handlerFn(entry, err)
+	}
+	return err
 }
 
 func (h *StackdriverHook) getData(df *dataField) map[string]interface{} {
